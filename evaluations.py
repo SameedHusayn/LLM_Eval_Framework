@@ -6,6 +6,9 @@ import torch
 import numpy as np
 import evaluate
 from utils import calculate_majority_vote, generate_summaries
+from data import load_dataset_subset
+from datasets import load_dataset, DatasetDict
+
 
 def evaluate_hellaswag(tokenizer, model, subset_size=10):
     dataset = load_dataset_subset("hellaswag", subset_size)
@@ -23,10 +26,10 @@ def evaluate_hellaswag(tokenizer, model, subset_size=10):
 
         for _ in range(5):
             for ending in endings:
-                inputs = tokenizer([context + " " + ending], return_tensors="pt", padding='max_length', max_length=64, truncation=True)
+                inputs = tokenizer([context + " " + ending], return_tensors="pt", padding='max_length', max_length=64, truncation=True).to("cpu")
                 with torch.no_grad():
-                    outputs = model(**inputs)
-                    logits = outputs.logits
+                    outputs = model(**inputs).to("cpu")
+                    logits = outputs.logits.to("cpu")
                 mean_logits = logits[:, -1, :].mean(dim=-1)
                 prediction = mean_logits.argmax().item()
                 all_predictions.append(prediction)
@@ -52,10 +55,10 @@ def evaluate_glue_cola(tokenizer, model, subset_size=100):
         all_predictions = []
 
         for _ in range(5):
-            inputs = tokenizer([sentence], return_tensors="pt", padding='max_length', max_length=64, truncation=True)
+            inputs = tokenizer([sentence], return_tensors="pt", padding='max_length', max_length=64, truncation=True).to("cpu")
             with torch.no_grad():
-                outputs = model(**inputs)
-                logits = outputs.logits
+                outputs = model(**inputs).to("cpu")
+                logits = outputs.logits.to("cpu")
             mean_logits = logits[:, -1, :].mean(dim=-1)
             prediction = mean_logits.argmax().item()
             all_predictions.append(prediction)
@@ -80,10 +83,10 @@ def evaluate_glue_sst2(tokenizer, model, subset_size=100):
         all_predictions = []
 
         for _ in range(5):
-            inputs = tokenizer([sentence], return_tensors="pt", padding='max_length', max_length=64, truncation=True)
+            inputs = tokenizer([sentence], return_tensors="pt", padding='max_length', max_length=64, truncation=True).to("cpu")
             with torch.no_grad():
-                outputs = model(**inputs)
-                logits = outputs.logits
+                outputs = model(**inputs).to("cpu")
+                logits = outputs.logits.to("cpu")
             mean_logits = logits[:, -1, :].mean(dim=-1)
             prediction = mean_logits.argmax().item()
             all_predictions.append(prediction)
@@ -109,10 +112,10 @@ def evaluate_glue_qqp(tokenizer, model, subset_size=100):
         all_predictions = []
 
         for _ in range(5):
-            inputs = tokenizer([question1, question2], return_tensors="pt", padding='max_length', max_length=128, truncation=True)
+            inputs = tokenizer([question1, question2], return_tensors="pt", padding='max_length', max_length=128, truncation=True).to("cpu")
             with torch.no_grad():
-                outputs = model(**inputs)
-                logits = outputs.logits
+                outputs = model(**inputs).to("cpu")
+                logits = outputs.logits.to("cpu")
             mean_logits = logits[:, -1, :].mean(dim=-1)
             prediction = mean_logits.argmax().item()
             all_predictions.append(prediction)
@@ -143,10 +146,10 @@ def evaluate_glue_stsb(tokenizer, model, subset_size=100):
         all_predictions = []
 
         for _ in range(5):
-            inputs = tokenizer([sentence1, sentence2], return_tensors="pt", padding='max_length', max_length=128, truncation=True)
+            inputs = tokenizer([sentence1, sentence2], return_tensors="pt", padding='max_length', max_length=128, truncation=True).to("cpu")
             with torch.no_grad():
-                outputs = model(**inputs)
-                logits = outputs.logits
+                outputs = model(**inputs).to("cpu")
+                logits = outputs.logits.to("cpu")
             mean_logits = logits[:, -1, :].mean(dim=-1)
             prediction = mean_logits.argmax().item()
             all_predictions.append(prediction)

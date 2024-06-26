@@ -1,6 +1,6 @@
 from models import init_model_and_tokenizer
-from datasets import load_dataset_subset
-from evaluation import evaluate_hellaswag, evaluate_glue_cola, evaluate_glue_sst2, evaluate_glue_qqp, evaluate_glue_stsb, evaluate_dialogsum, evaluate_perplexity
+from data import load_dataset_subset
+from evaluations import evaluate_hellaswag, evaluate_glue_cola, evaluate_glue_sst2, evaluate_glue_qqp, evaluate_glue_stsb, evaluate_dialogsum, evaluate_perplexity
 import argparse
 
 def main():

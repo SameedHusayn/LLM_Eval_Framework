@@ -1,6 +1,12 @@
+datasets
+evaluate
+rouge_score
+accelerate
+bitsandbytes
+scipy
 transformers
 torch
-datasets
 scikit-learn
-scipy
-evaluate
+tqdm
+pandas
+numpy
