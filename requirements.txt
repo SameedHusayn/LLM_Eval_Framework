@@ -10,3 +10,4 @@ scikit-learn==1.5.0
 tqdm==4.66.4
 pandas==2.2.1
 numpy==1.26.4
+inquirer==3.3.0

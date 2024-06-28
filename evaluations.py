@@ -302,7 +302,7 @@ def calculate_mmlu(subject, model, tokenizer, dev_df, test_df):
     return cors, acc, all_probs
 
 def evaluate_mmlu(tokenizer, model):
-    dataset = load_dataset("cais/mmlu", ['abstract_algebra','anatomy'], trust_remote_code=True)
+    dataset = load_dataset("cais/mmlu", 'abstract_algebra', trust_remote_code=True)
     test = pd.DataFrame(dataset['test'])
     dev = pd.DataFrame(dataset['dev'])
     results = {}
