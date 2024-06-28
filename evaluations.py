@@ -11,7 +11,8 @@ from datasets import load_dataset, DatasetDict
 
 
 def evaluate_hellaswag(tokenizer, model, subset_size=10):
-    dataset = load_dataset_subset("hellaswag", subset_size)
+    dataset = load_dataset("hellaswag", trust_remote_code=True)
+    dataset = dataset['validation'].select(range(subset_size))
     accuracy_metric = load_metric("accuracy")
 
     predictions_list = []
@@ -43,9 +44,8 @@ def evaluate_hellaswag(tokenizer, model, subset_size=10):
     print(f"HellaSwag Accuracy: {accuracy_score['accuracy']}")
 
 def evaluate_glue_cola(tokenizer, model, subset_size=100):
-    # dataset = load_dataset_subset("glue/cola", subset_size)
     dataset = load_dataset("glue", "cola", split='validation')
-    validation_subset = dataset.select(range(10))
+    validation_subset = dataset.select(100)
 
     predictions_list = []
     references_list = []
@@ -73,8 +73,8 @@ def evaluate_glue_cola(tokenizer, model, subset_size=100):
     print(f"GLUE CoLA Accuracy: {accuracy}")
 
 def evaluate_glue_sst2(tokenizer, model, subset_size=100):
-    dataset = load_dataset_subset("glue/sst2", subset_size)
-
+    dataset = load_dataset("glue", "sst2", split='validation')
+    dataset = dataset.select(range(subset_size))
     predictions_list = []
     references_list = []
 
@@ -101,7 +101,8 @@ def evaluate_glue_sst2(tokenizer, model, subset_size=100):
     print(f"GLUE SST-2 Accuracy: {accuracy}")
 
 def evaluate_glue_qqp(tokenizer, model, subset_size=100):
-    dataset = load_dataset_subset("glue/qqp", subset_size)
+    dataset = load_dataset("glue", "qqp", split='validation')
+    dataset = dataset.select(range(subset_size))
 
     predictions_list = []
     references_list = []
@@ -135,7 +136,8 @@ def evaluate_glue_qqp(tokenizer, model, subset_size=100):
     print(f"GLUE QQP F1: {f1}")
 
 def evaluate_glue_stsb(tokenizer, model, subset_size=100):
-    dataset = load_dataset_subset("glue/stsb", subset_size)
+    dataset = load_dataset("glue", "stsb", split='validation')
+    dataset = dataset.select(range(subset_size))
 
     predictions_list = []
     references_list = []
