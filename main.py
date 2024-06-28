@@ -30,7 +30,7 @@ def main():
     }
 
     selected_tasks = [tasks[task.strip()] for task in task_choices if task.strip() in tasks]
-
+    
     if selected_tasks:
         model_name = input("Enter the model name or path (default: microsoft/Phi-3-mini-4k-instruct): ") or "microsoft/Phi-3-mini-4k-instruct"
         tokenizer, model = init_model_and_tokenizer(model_name)
