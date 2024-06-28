@@ -9,6 +9,8 @@ from utils import calculate_majority_vote, tokenize_function
 from data import load_dataset_subset
 from datasets import load_dataset, DatasetDict
 from transformers import GenerationConfig
+from tqdm import tqdm
+
 
 def evaluate_hellaswag(tokenizer, model, subset_size=10):
     dataset = load_dataset("hellaswag", trust_remote_code=True)
@@ -217,30 +219,31 @@ def evaluate_dialogsum(tokenizer, model, subset_size=10):
     print(f'METEOR Results: \n{meteor_results}\n')
 
 def evaluate_perplexity(tokenizer, model):
-    from datasets import load_dataset
-    import torch
-    import math
-
-    dataset = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
-    encodings = tokenizer("\n\n".join(dataset["text"]), return_tensors="pt")
-
-    max_length = model.config.n_positions
+    test = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
+    encodings = tokenizer("\n\n".join(test["text"]), return_tensors="pt", truncation=True, max_length=4096)
+    max_length = model.config.max_length
     stride = 512
+    seq_len = encodings.input_ids.size(1)
+    device = "cuda"
 
-    lls = []
-    for i in range(0, encodings.input_ids.size(1), stride):
-        begin_loc = max(i + stride - max_length, 0)
-        end_loc = min(i + stride, encodings.input_ids.size(1))
-        trg_len = end_loc - i
-        input_ids = encodings.input_ids[:, begin_loc:end_loc].to(model.device)
+    nlls = []
+    prev_end_loc = 0
+    for begin_loc in tqdm(range(0, seq_len, stride)):
+        end_loc = min(begin_loc + max_length, seq_len)
+        trg_len = end_loc - prev_end_loc  # may be different from stride on last loop
+        input_ids = encodings.input_ids[:, begin_loc:end_loc].to(device)
         target_ids = input_ids.clone()
         target_ids[:, :-trg_len] = -100
 
         with torch.no_grad():
             outputs = model(input_ids, labels=target_ids)
+            neg_log_likelihood = outputs.loss
 
-        log_likelihood = outputs.loss * trg_len
-        lls.append(log_likelihood)
+        nlls.append(neg_log_likelihood)
 
-    ppl = torch.exp(torch.stack(lls).sum() / end_loc)
-    print(f"Perplexity: {ppl.item()}")
+        prev_end_loc = end_loc
+        if end_loc == seq_len:
+            break
+
+    ppl = torch.exp(torch.stack(nlls).mean())
+    print(f"Perplexity: {ppl}")
