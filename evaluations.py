@@ -11,13 +11,15 @@ from datasets import load_dataset, DatasetDict
 
 
 def evaluate_hellaswag(tokenizer, model, subset_size=10):
-    dataset = load_dataset_subset("hellaswag", subset_size)
+    dataset = load_dataset("glue", "cola", split='validation')
+    validation_subset = dataset.select(range(10))
+
     accuracy_metric = load_metric("accuracy")
 
     predictions_list = []
     references_list = []
 
-    for example in dataset:
+    for example in validation_subset:
         context = str(example['ctx_a'])
         endings = example['endings']
         label_int = int(example['label'])
@@ -26,10 +28,10 @@ def evaluate_hellaswag(tokenizer, model, subset_size=10):
 
         for _ in range(5):
             for ending in endings:
-                inputs = tokenizer([context + " " + ending], return_tensors="pt", padding='max_length', max_length=64, truncation=True).to("cpu")
+                inputs = tokenizer([context + " " + ending], return_tensors="pt", padding='max_length', max_length=64, truncation=True)
                 with torch.no_grad():
-                    outputs = model(**inputs).to("cpu")
-                    logits = outputs.logits.to("cpu")
+                    outputs = model(**inputs)
+                    logits = outputs.logits
                 mean_logits = logits[:, -1, :].mean(dim=-1)
                 prediction = mean_logits.argmax().item()
                 all_predictions.append(prediction)
@@ -55,10 +57,10 @@ def evaluate_glue_cola(tokenizer, model, subset_size=100):
         all_predictions = []
 
         for _ in range(5):
-            inputs = tokenizer([sentence], return_tensors="pt", padding='max_length', max_length=64, truncation=True).to("cpu")
+            inputs = tokenizer([sentence], return_tensors="pt", padding='max_length', max_length=64, truncation=True)
             with torch.no_grad():
-                outputs = model(**inputs).to("cpu")
-                logits = outputs.logits.to("cpu")
+                outputs = model(**inputs)
+                logits = outputs.logits
             mean_logits = logits[:, -1, :].mean(dim=-1)
             prediction = mean_logits.argmax().item()
             all_predictions.append(prediction)
@@ -83,10 +85,10 @@ def evaluate_glue_sst2(tokenizer, model, subset_size=100):
         all_predictions = []
 
         for _ in range(5):
-            inputs = tokenizer([sentence], return_tensors="pt", padding='max_length', max_length=64, truncation=True).to("cpu")
+            inputs = tokenizer([sentence], return_tensors="pt", padding='max_length', max_length=64, truncation=True)
             with torch.no_grad():
-                outputs = model(**inputs).to("cpu")
-                logits = outputs.logits.to("cpu")
+                outputs = model(**inputs)
+                logits = outputs.logits
             mean_logits = logits[:, -1, :].mean(dim=-1)
             prediction = mean_logits.argmax().item()
             all_predictions.append(prediction)
@@ -112,10 +114,10 @@ def evaluate_glue_qqp(tokenizer, model, subset_size=100):
         all_predictions = []
 
         for _ in range(5):
-            inputs = tokenizer([question1, question2], return_tensors="pt", padding='max_length', max_length=128, truncation=True).to("cpu")
+            inputs = tokenizer([question1, question2], return_tensors="pt", padding='max_length', max_length=128, truncation=True)
             with torch.no_grad():
-                outputs = model(**inputs).to("cpu")
-                logits = outputs.logits.to("cpu")
+                outputs = model(**inputs)
+                logits = outputs.logits
             mean_logits = logits[:, -1, :].mean(dim=-1)
             prediction = mean_logits.argmax().item()
             all_predictions.append(prediction)
@@ -146,10 +148,10 @@ def evaluate_glue_stsb(tokenizer, model, subset_size=100):
         all_predictions = []
 
         for _ in range(5):
-            inputs = tokenizer([sentence1, sentence2], return_tensors="pt", padding='max_length', max_length=128, truncation=True).to("cpu")
+            inputs = tokenizer([sentence1, sentence2], return_tensors="pt", padding='max_length', max_length=128, truncation=True)
             with torch.no_grad():
-                outputs = model(**inputs).to("cpu")
-                logits = outputs.logits.to("cpu")
+                outputs = model(**inputs)
+                logits = outputs.logits
             mean_logits = logits[:, -1, :].mean(dim=-1)
             prediction = mean_logits.argmax().item()
             all_predictions.append(prediction)
