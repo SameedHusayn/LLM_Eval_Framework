@@ -11,15 +11,13 @@ from datasets import load_dataset, DatasetDict
 
 
 def evaluate_hellaswag(tokenizer, model, subset_size=10):
-    dataset = load_dataset("glue", "cola", split='validation')
-    validation_subset = dataset.select(range(10))
-
+    dataset = load_dataset_subset("hellaswag", subset_size)
     accuracy_metric = load_metric("accuracy")
 
     predictions_list = []
     references_list = []
 
-    for example in validation_subset:
+    for example in dataset:
         context = str(example['ctx_a'])
         endings = example['endings']
         label_int = int(example['label'])
@@ -45,12 +43,14 @@ def evaluate_hellaswag(tokenizer, model, subset_size=10):
     print(f"HellaSwag Accuracy: {accuracy_score['accuracy']}")
 
 def evaluate_glue_cola(tokenizer, model, subset_size=100):
-    dataset = load_dataset_subset("glue/cola", subset_size)
+    # dataset = load_dataset_subset("glue/cola", subset_size)
+    dataset = load_dataset("glue", "cola", split='validation')
+    validation_subset = dataset.select(range(10))
 
     predictions_list = []
     references_list = []
 
-    for example in dataset:
+    for example in validation_subset:
         sentence = str(example['sentence'])
         label_int = int(example['label'])
 
