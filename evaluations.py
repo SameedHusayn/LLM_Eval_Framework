@@ -210,15 +210,15 @@ def evaluate_dialogsum(tokenizer, model, subset_size=10):
 
     # Evaluate using ROUGE
     rouge_results = rouge.compute(predictions=original_model_summaries, references=human_baseline_summaries)
-    print(f'ROUGE Results: \n{rouge_results}\n')
+    print(f'dialogsum ROUGE Results: \n{rouge_results}\n')
 
     # Evaluate using BLEU
     bleu_results = bleu.compute(predictions=original_model_summaries, references=human_baseline_summaries)
-    print(f'BLEU Results: \n{bleu_results}\n')
+    print(f'dialogsum BLEU Results: \n{bleu_results}\n')
 
     # Evaluate using METEOR
     meteor_results = meteor.compute(predictions=original_model_summaries, references=human_baseline_summaries)
-    print(f'METEOR Results: \n{meteor_results}\n')
+    print(f'dialogsum METEOR Results: \n{meteor_results}\n')
 
 def evaluate_perplexity(tokenizer, model):
     test = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
@@ -248,7 +248,7 @@ def evaluate_perplexity(tokenizer, model):
             break
 
     ppl = torch.exp(torch.stack(nlls).mean())
-    print(f"Perplexity: {ppl}")
+    print(f"Perplexity On WikiText-2-Raw Dataset: {ppl}")
 
 def calculate_mmlu(subject, model, tokenizer, dev_df, test_df):
     cors = []
@@ -297,7 +297,7 @@ def calculate_mmlu(subject, model, tokenizer, dev_df, test_df):
     cors = np.array(cors)
 
     all_probs = np.array(all_probs)
-    print("Average accuracy {:.3f} - {}".format(acc, subject))
+    print("Average MMLU accuracy {:.3f} - {}".format(acc, subject))
 
     return cors, acc, all_probs
 
@@ -314,5 +314,5 @@ def evaluate_mmlu(tokenizer, model):
         results[subject] = acc
 
     avg_accuracy = np.mean(list(results.values()))
-    print("Average accuracy across all subjects: {:.3f}".format(avg_accuracy))
-    results["Average Accuracy"] = avg_accuracy
+    print("Average MMLU accuracy across all subjects: {:.3f}".format(avg_accuracy))
+    results["Average MMLU Accuracy"] = avg_accuracy
