@@ -5,7 +5,7 @@ from collections import Counter
 import torch
 import numpy as np
 import evaluate
-from utils import calculate_majority_vote, generate_summaries, tokeninze_function
+from utils import calculate_majority_vote, tokenize_function
 from data import load_dataset_subset
 from datasets import load_dataset, DatasetDict
 from transformers import GenerationConfig
@@ -180,7 +180,7 @@ def evaluate_dialogsum(tokenizer, model, subset_size=10):
         "test": reduced_test_set
     })
 
-    tokenize_datasets = dataset.map(tokeninze_function, batched=True)
+    tokenize_datasets = dataset.map(lambda x: tokenize_function(x, tokenizer), batched=True)
     tokenize_datasets = tokenize_datasets.remove_columns(['id', 'topic', 'dialogue',
                                                      'summary'])
 

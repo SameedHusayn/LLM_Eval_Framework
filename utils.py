@@ -16,7 +16,7 @@ def generate_summaries(tokenizer, model, dialogues):
 
     return generated_summaries
 
-def tokeninze_function(example,tokenizer):
+def tokeninze_function(example):
     start_prompt = 'Summarize the following conversation. \n\n'
     end_prompt = '\n\nSummary: '
     prompt = [start_prompt + dialogue + end_prompt for dialogue in example["dialogue"]]
