@@ -13,7 +13,7 @@ from transformers import GenerationConfig
 def evaluate_hellaswag(tokenizer, model, subset_size=10):
     dataset = load_dataset("hellaswag", trust_remote_code=True)
     dataset = dataset['validation'].select(range(subset_size))
-    accuracy_metric = load_metric("accuracy")
+    accuracy_metric = load_metric("accuracy", trust_remote_code=True)
 
     predictions_list = []
     references_list = []
