@@ -5,10 +5,10 @@ from collections import Counter
 import torch
 import numpy as np
 import evaluate
-from utils import calculate_majority_vote, generate_summaries
+from utils import calculate_majority_vote, generate_summaries, tokeninze_function
 from data import load_dataset_subset
 from datasets import load_dataset, DatasetDict
-
+from transformers import GenerationConfig
 
 def evaluate_hellaswag(tokenizer, model, subset_size=10):
     dataset = load_dataset("hellaswag", trust_remote_code=True)
@@ -171,23 +171,50 @@ def evaluate_glue_stsb(tokenizer, model, subset_size=100):
 def evaluate_dialogsum(tokenizer, model, subset_size=10):
     dataset_name = "knkarthick/dialogsum"
     dataset = load_dataset(dataset_name)
-    reduced_test_set = dataset['test'].select(range(subset_size))
-    dialogues = reduced_test_set['dialogue']
-    human_baseline_summaries = reduced_test_set['summary']
+    reduced_test_set = dataset['test'].select(range(10))
 
-    generated_summaries = generate_summaries(tokenizer, model, dialogues)
+    # Updating the dataset with the reduced test set
+    dataset = DatasetDict({
+        "train": dataset['train'],
+        "validation": dataset['validation'],
+        "test": reduced_test_set
+    })
 
+    tokenize_datasets = dataset.map(tokeninze_function, batched=True)
+    tokenize_datasets = tokenize_datasets.remove_columns(['id', 'topic', 'dialogue',
+                                                     'summary'])
+
+    # Load evaluation metrics
     rouge = evaluate.load('rouge')
     bleu = evaluate.load('bleu')
     meteor = evaluate.load('meteor')
 
-    rouge_results = rouge.compute(predictions=generated_summaries, references=human_baseline_summaries)
-    bleu_results = bleu.compute(predictions=generated_summaries, references=human_baseline_summaries)
-    meteor_results = meteor.compute(predictions=generated_summaries, references=human_baseline_summaries)
+    # Get dialogues and human summaries
+    dialogues = dataset['test']['dialogue']
+    human_baseline_summaries = dataset['test']['summary']
 
-    print(f"DialogSum ROUGE: {rouge_results}")
-    print(f"DialogSum BLEU: {bleu_results}")
-    print(f"DialogSum METEOR: {meteor_results}")
+    # Initialize lists for generated summaries
+    original_model_summaries = []
+
+    # Generate summaries
+    for dialogue in dialogues:
+        prompt = f"Summarize the following conversations.\n\n{dialogue}\n\nSummary: "
+        input_ids = tokenizer(prompt, return_tensors='pt').input_ids
+        original_model_outputs = model.generate(input_ids=input_ids, generation_config=GenerationConfig(max_new_tokens=100, num_beams=1))
+        original_model_text_output = tokenizer.decode(original_model_outputs[0], skip_special_tokens=True)
+        original_model_summaries.append(original_model_text_output)
+
+    # Evaluate using ROUGE
+    rouge_results = rouge.compute(predictions=original_model_summaries, references=human_baseline_summaries)
+    print(f'ROUGE Results: \n{rouge_results}\n')
+
+    # Evaluate using BLEU
+    bleu_results = bleu.compute(predictions=original_model_summaries, references=human_baseline_summaries)
+    print(f'BLEU Results: \n{bleu_results}\n')
+
+    # Evaluate using METEOR
+    meteor_results = meteor.compute(predictions=original_model_summaries, references=human_baseline_summaries)
+    print(f'METEOR Results: \n{meteor_results}\n')
 
 def evaluate_perplexity(tokenizer, model):
     from datasets import load_dataset
