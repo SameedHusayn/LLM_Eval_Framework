@@ -250,7 +250,7 @@ def evaluate_perplexity(tokenizer, model):
     ppl = torch.exp(torch.stack(nlls).mean())
     print(f"Perplexity: {ppl}")
 
-def evaluate_mmlu(subject, model, tokenizer, dev_df, test_df):
+def calculate_mmlu(subject, model, tokenizer, dev_df, test_df):
     cors = []
     all_probs = []
     choices = ["A", "B", "C", "D"]
@@ -301,7 +301,7 @@ def evaluate_mmlu(subject, model, tokenizer, dev_df, test_df):
 
     return cors, acc, all_probs
 
-def calculate_mmlu(tokenizer, model):
+def evaluate_mmlu(tokenizer, model):
     dataset = load_dataset("cais/mmlu", 'abstract_algebra', trust_remote_code=True)
     test = pd.DataFrame(dataset['test'])
     dev = pd.DataFrame(dataset['dev'])
@@ -309,7 +309,7 @@ def calculate_mmlu(tokenizer, model):
 
     subjects = sorted(dev['subject'].value_counts().keys())
     for subject in subjects:
-        cor, acc, prob = evaluate_mmlu(subject, model, tokenizer, dev[dev['subject'] == subject], test[test['subject'] == subject])
+        cor, acc, prob = calculate_mmlu(subject, model, tokenizer, dev[dev['subject'] == subject], test[test['subject'] == subject])
         # print(cor, acc, prob)
         results[subject] = acc
 
