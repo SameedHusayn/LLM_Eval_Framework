@@ -1,5 +1,4 @@
 from collections import Counter
-from models import tokenzier
 
 def calculate_majority_vote(predictions):
     counter = Counter(predictions)
@@ -17,7 +16,7 @@ def generate_summaries(tokenizer, model, dialogues):
 
     return generated_summaries
 
-def tokeninze_function(example):
+def tokeninze_function(example,tokenizer):
     start_prompt = 'Summarize the following conversation. \n\n'
     end_prompt = '\n\nSummary: '
     prompt = [start_prompt + dialogue + end_prompt for dialogue in example["dialogue"]]
