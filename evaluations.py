@@ -5,11 +5,13 @@ from collections import Counter
 import torch
 import numpy as np
 import evaluate
-from utils import calculate_majority_vote, tokenize_function
+from utils import calculate_majority_vote, tokenize_function, format_subject, format_example, gen_prompt
 from data import load_dataset_subset
 from datasets import load_dataset, DatasetDict
 from transformers import GenerationConfig
 from tqdm import tqdm
+import csv
+import pandas as pd
 
 
 def evaluate_hellaswag(tokenizer, model, subset_size=10):
@@ -247,3 +249,70 @@ def evaluate_perplexity(tokenizer, model):
 
     ppl = torch.exp(torch.stack(nlls).mean())
     print(f"Perplexity: {ppl}")
+
+def evaluate_mmlu(subject, model, tokenizer, dev_df, test_df):
+    cors = []
+    all_probs = []
+    choices = ["A", "B", "C", "D"]
+
+    for i in range(test_df.shape[0]):
+        k = dev_df.shape[0]
+        prompt_end = format_example(test_df, i, include_answer=False)
+        train_prompt = gen_prompt(dev_df, subject, k)
+        prompt = train_prompt + prompt_end
+#         print(prompt)
+
+        input_ids = tokenizer(prompt, return_tensors="pt").input_ids.cuda()
+
+        while input_ids.shape[-1] > 2048:
+            k -= 1
+            train_prompt = gen_prompt(dev_df, subject, k)
+            prompt = train_prompt + prompt_end
+            input_ids = tokenizer(prompt, return_tensors="pt").input_ids.cuda()
+
+        label = test_df.iloc[i, test_df.shape[1] - 1]
+        with torch.no_grad():
+            outputs = model(input_ids=input_ids)
+        logits = outputs.logits  # shape (batch_size, sequence_length, vocab_size)
+        next_token_logits = logits[:, -1, :]  # shape (batch_size, vocab_size)
+#         print(logits)
+
+        next_token_logits = next_token_logits.flatten()
+        next_token_probs = torch.nn.functional.softmax(next_token_logits, dim=-1).cpu()
+        tokens_of_interest = [
+            tokenizer("A", add_special_tokens=False).input_ids[-1],
+            tokenizer("B", add_special_tokens=False).input_ids[-1],
+            tokenizer("C", add_special_tokens=False).input_ids[-1],
+            tokenizer("D", add_special_tokens=False).input_ids[-1],
+        ]
+        probs = next_token_probs[tokens_of_interest].tolist()
+        pred = {0: "A", 1: "B", 2: "C", 3: "D"}[np.argmax(probs)]
+#         print(pred, choices[label])
+        cor = pred == choices[label]
+        cors.append(cor)
+#         print(np.sum(cors)/len(cors))
+        all_probs.append(probs)
+
+    acc = np.mean(cors)
+    cors = np.array(cors)
+
+    all_probs = np.array(all_probs)
+    print("Average accuracy {:.3f} - {}".format(acc, subject))
+
+    return cors, acc, all_probs
+
+def calculate_mmlu(tokenizer, model):
+    dataset = load_dataset("cais/mmlu", 'abstract_algebra', trust_remote_code=True)
+    test = pd.DataFrame(dataset['test'])
+    dev = pd.DataFrame(dataset['dev'])
+    results = {}
+
+    subjects = sorted(dev['subject'].value_counts().keys())
+    for subject in subjects:
+        cor, acc, prob = evaluate_mmlu(subject, model, tokenizer, dev[dev['subject'] == subject], test[test['subject'] == subject])
+        # print(cor, acc, prob)
+        results[subject] = acc
+
+    avg_accuracy = np.mean(list(results.values()))
+    print("Average accuracy across all subjects: {:.3f}".format(avg_accuracy))
+    results["Average Accuracy"] = avg_accuracy
