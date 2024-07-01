@@ -33,9 +33,9 @@ def main():
     
     if selected_tasks:
         model_name = input("Enter the model name or path (default: microsoft/Phi-3-mini-4k-instruct): ") or "microsoft/Phi-3-mini-4k-instruct"
-        # tokenizer, model = init_model_and_tokenizer(model_name)
-        tokenizer = "tokenzier"
-        model = "model"
+        tokenizer, model = init_model_and_tokenizer(model_name)
+        # tokenizer = "tokenzier"
+        # model = "model"
         
         for task_func in selected_tasks:
             task_func(tokenizer, model)
