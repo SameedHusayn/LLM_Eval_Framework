@@ -51,12 +51,12 @@ def evaluate_hellaswag(tokenizer, model, subset_size=10):
 def evaluate_glue_cola(tokenizer, model, subset_size=100):
     print("Calculating GLUE CoLA...")
     dataset = load_dataset("glue", "cola", split='validation')
-    validation_subset = dataset.select(100)
+    dataset = dataset.select(range(subset_size))
 
     predictions_list = []
     references_list = []
 
-    for example in validation_subset:
+    for example in dataset:
         sentence = str(example['sentence'])
         label_int = int(example['label'])
 
