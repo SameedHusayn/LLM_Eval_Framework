@@ -107,6 +107,38 @@ def evaluate_glue_sst2(tokenizer, model, subset_size=100):
     accuracy = accuracy_score(references_list, predictions_list)
     print(f"GLUE SST-2 Accuracy: {accuracy}")
 
+def evaluate_glue_mrpc(tokenizer, model, subset_size=100):
+    print("Calculating GLUE MRPC...")
+    dataset = load_dataset("glue", "mrpc", split='validation')
+    dataset = dataset.select(range(subset_size))
+    predictions_list = []
+    references_list = []
+
+    for example in dataset:
+        sentence1 = str(example['sentence1'])
+        sentence2 = str(example['sentence2'])
+        label_int = int(example['label'])
+
+        all_predictions = []
+
+        for _ in range(5):
+            inputs = tokenizer(
+                sentence1, sentence2, return_tensors="pt",
+                padding='max_length', max_length=128, truncation=True
+            )
+            with torch.no_grad():
+                outputs = model(**inputs)
+                logits = outputs.logits
+            prediction = logits.argmax(dim=-1).item()
+            all_predictions.append(prediction)
+
+        final_prediction = calculate_majority_vote(all_predictions)
+        predictions_list.append(final_prediction)
+        references_list.append(label_int)
+
+    accuracy = accuracy_score(references_list, predictions_list)
+    print(f"GLUE MRPC Accuracy: {accuracy}")
+
 def evaluate_glue_qqp(tokenizer, model, subset_size=100):
     print("Calculating GLUE QQP...")
 

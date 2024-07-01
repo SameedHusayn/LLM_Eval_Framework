@@ -1,6 +1,6 @@
 from models import init_model_and_tokenizer
 from data import load_dataset_subset
-from evaluations import evaluate_hellaswag, evaluate_glue_cola, evaluate_glue_sst2, evaluate_glue_qqp, evaluate_glue_stsb, evaluate_dialogsum, evaluate_perplexity, evaluate_mmlu
+from evaluations import evaluate_hellaswag, evaluate_glue_mrpc, evaluate_glue_cola, evaluate_glue_sst2, evaluate_glue_qqp, evaluate_glue_stsb, evaluate_dialogsum, evaluate_perplexity, evaluate_mmlu
 
 def print_task_choices():
     print("Select evaluation tasks:")
@@ -12,6 +12,7 @@ def print_task_choices():
     print("6. DialogSum")
     print("7. Perplexity")
     print("8. MMLU")
+    print("9. MRPC")
     print("Enter task numbers separated by commas (e.g., 1, 3, 6):")
 
 def main():
@@ -26,7 +27,8 @@ def main():
         '5': evaluate_glue_stsb,
         '6': evaluate_dialogsum,
         '7': evaluate_perplexity,
-        '8': evaluate_mmlu
+        '8': evaluate_mmlu,
+        '9': evaluate_glue_mrpc
     }
 
     selected_tasks = [tasks[task.strip()] for task in task_choices if task.strip() in tasks]
