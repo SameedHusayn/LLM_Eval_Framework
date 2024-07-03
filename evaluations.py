@@ -17,7 +17,7 @@ import pandas as pd
 def evaluate_hellaswag(tokenizer, model, subset_size=10):
     print("Calculating HellaSwag...")
     dataset = load_dataset("hellaswag", trust_remote_code=True)
-    dataset = dataset['validation'].select(range(subset_size))
+    # dataset = dataset['validation'].select(range(subset_size))
     accuracy_metric = load_metric("accuracy", trust_remote_code=True)
 
     predictions_list = []
@@ -51,7 +51,7 @@ def evaluate_hellaswag(tokenizer, model, subset_size=10):
 def evaluate_glue_cola(tokenizer, model, subset_size=100):
     print("Calculating GLUE CoLA...")
     dataset = load_dataset("glue", "cola", split='validation')
-    dataset = dataset.select(range(subset_size))
+    # dataset = dataset.select(range(subset_size))
 
     predictions_list = []
     references_list = []
@@ -81,7 +81,7 @@ def evaluate_glue_cola(tokenizer, model, subset_size=100):
 def evaluate_glue_sst2(tokenizer, model, subset_size=100):
     print("Calculating GLUE SST-2...")
     dataset = load_dataset("glue", "sst2", split='validation')
-    dataset = dataset.select(range(subset_size))
+    # dataset = dataset.select(range(subset_size))
     predictions_list = []
     references_list = []
 
@@ -110,7 +110,7 @@ def evaluate_glue_sst2(tokenizer, model, subset_size=100):
 def evaluate_glue_mrpc(tokenizer, model, subset_size=100):
     print("Calculating GLUE MRPC...")
     dataset = load_dataset("glue", "mrpc", split='validation')
-    dataset = dataset.select(range(subset_size))
+    # dataset = dataset.select(range(subset_size))
     predictions_list = []
     references_list = []
 
@@ -143,7 +143,7 @@ def evaluate_glue_qqp(tokenizer, model, subset_size=100):
     print("Calculating GLUE QQP...")
 
     dataset = load_dataset("glue", "qqp", split='validation')
-    dataset = dataset.select(range(subset_size))
+    # dataset = dataset.select(range(subset_size))
 
     predictions_list = []
     references_list = []
@@ -180,7 +180,7 @@ def evaluate_glue_stsb(tokenizer, model, subset_size=100):
     print("Calculating GLUE STS-B...")
 
     dataset = load_dataset("glue", "stsb", split='validation')
-    dataset = dataset.select(range(subset_size))
+    # dataset = dataset.select(range(subset_size))
 
     predictions_list = []
     references_list = []
@@ -211,23 +211,22 @@ def evaluate_glue_stsb(tokenizer, model, subset_size=100):
     print(f"GLUE STS-B Pearson Correlation: {pearson_corr}")
     print(f"GLUE STS-B Spearman Correlation: {spearman_corr}")
 
-def evaluate_dialogsum(tokenizer, model, subset_size=10):
+def evaluate_dialogsum(tokenizer, model, subset_size=10, max_length=512):
     print("Calculating ROUGE, BLEU, & METEOR using Dialogsum ...")
 
     dataset_name = "knkarthick/dialogsum"
     dataset = load_dataset(dataset_name)
-    reduced_test_set = dataset['test'].select(range(10))
+    # reduced_test_set = dataset['test'].select(range(subset_size))
 
     # Updating the dataset with the reduced test set
     dataset = DatasetDict({
         "train": dataset['train'],
         "validation": dataset['validation'],
-        "test": reduced_test_set
+        "test": dataset['test']
     })
 
-    tokenize_datasets = dataset.map(lambda x: tokenize_function(x, tokenizer), batched=True)
-    tokenize_datasets = tokenize_datasets.remove_columns(['id', 'topic', 'dialogue',
-                                                     'summary'])
+    tokenize_datasets = dataset.map(lambda x: tokenize_function(x, tokenizer, max_length), batched=True)
+    tokenize_datasets = tokenize_datasets.remove_columns(['id', 'topic', 'dialogue', 'summary'])
 
     # Load evaluation metrics
     rouge = evaluate.load('rouge')
@@ -243,9 +242,12 @@ def evaluate_dialogsum(tokenizer, model, subset_size=10):
 
     # Generate summaries
     for dialogue in dialogues:
-        prompt = f"Summarize the following conversations.\n\n{dialogue}\n\nSummary: "
-        input_ids = tokenizer(prompt, return_tensors='pt').input_ids
-        original_model_outputs = model.generate(input_ids=input_ids, generation_config=GenerationConfig(max_new_tokens=100, num_beams=1))
+        prompt = f"Summarize the following conversation.\n\n{dialogue}\n\nSummary: "
+        tokenized_input = tokenizer(prompt, return_tensors='pt', padding='max_length', truncation=True, max_length=max_length)
+        input_ids = tokenized_input['input_ids']
+        attention_mask = tokenized_input['attention_mask']
+
+        original_model_outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, pad_token_id=tokenizer.eos_token_id, max_new_tokens=100, num_beams=1)
         original_model_text_output = tokenizer.decode(original_model_outputs[0], skip_special_tokens=True)
         original_model_summaries.append(original_model_text_output)
 
@@ -346,7 +348,7 @@ def calculate_mmlu(subject, model, tokenizer, dev_df, test_df):
     return cors, acc, all_probs
 
 def evaluate_mmlu(tokenizer, model):
-    dataset = load_dataset("cais/mmlu", 'abstract_algebra', trust_remote_code=True)
+    dataset = load_dataset("cais/mmlu", 'all', trust_remote_code=True)
     test = pd.DataFrame(dataset['test'])
     dev = pd.DataFrame(dataset['dev'])
     results = {}
