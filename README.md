@@ -50,15 +50,15 @@ This script contains functions for evaluating various datasets and tasks. Each e
 
 #### Functions:
 
-- `evaluate_hellaswag(tokenizer, model, subset_size=10)`
-- `evaluate_glue_cola(tokenizer, model, subset_size=100)`
-- `evaluate_glue_sst2(tokenizer, model, subset_size=100)`
-- `evaluate_glue_mrpc(tokenizer, model, subset_size=100)`
-- `evaluate_glue_qqp(tokenizer, model, subset_size=100)`
-- `evaluate_glue_stsb(tokenizer, model, subset_size=100)`
-- `evaluate_dialogsum(tokenizer, model, subset_size=10, max_length=512)`
+- `evaluate_hellaswag(tokenizer, model)`
+- `evaluate_glue_cola(tokenizer, model)`
+- `evaluate_glue_sst2(tokenizer, model)`
+- `evaluate_glue_mrpc(tokenizer, model)`
+- `evaluate_glue_qqp(tokenizer, model)`
+- `evaluate_glue_stsb(tokenizer, model)`
+- `evaluate_dialogsum(tokenizer, model)`
 - `evaluate_perplexity(tokenizer, model)`
-- `calculate_mmlu(subject, model, tokenizer, dev_df, test_df)`
+- `calculate_mmlu(model, tokenizer)`
 - `evaluate_mmlu(tokenizer, model)`
 
 ### main.py
@@ -132,7 +132,3 @@ Contains utility functions for processing data and calculating metrics.
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request for any changes.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
