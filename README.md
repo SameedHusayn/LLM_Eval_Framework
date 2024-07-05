@@ -88,7 +88,7 @@ Contains utility functions for processing data and calculating metrics.
 - `format_example(df, idx, include_answer=True)`
 - `gen_prompt(train_df, subject, k=-1)`
 
-## Supported Models
+## Supported Models and Architectures
 
 - microsoft/Phi-3-mini-4k-instruct
 - mistralai/Mistral-7B-v0.1
