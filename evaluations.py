@@ -243,7 +243,6 @@ def evaluate_dialogsum(tokenizer, model, max_length=512):
         model: The model to evaluate.
         max_length (int): The maximum length for the tokenized sequences. Default is 512.
 
-
     Returns:
         None
     """
