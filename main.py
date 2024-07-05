@@ -1,5 +1,4 @@
 from models import init_model_and_tokenizer
-from evaluations import evaluate_hellaswag, evaluate_glue_mrpc, evaluate_glue_cola, evaluate_glue_sst2, evaluate_glue_qqp, evaluate_glue_stsb, evaluate_dialogsum, evaluate_perplexity, evaluate_mmlu
 from huggingface_hub import notebook_login
 from constants import models, tasks
 
@@ -7,6 +6,24 @@ import os
 import shutil
 
 def main():
+    """
+    Main function to select models and evaluation tasks, initialize the models and tokenizers, and evaluate the selected models on the selected tasks.
+
+    The function performs the following steps:
+    1. Logs in to the notebook environment.
+    2. Displays available models and prompts the user to select models for evaluation.
+    3. Displays available evaluation tasks and prompts the user to select tasks for evaluation.
+    4. Initializes the selected models and tokenizers.
+    5. Evaluates the selected models on the selected tasks.
+    6. Deletes the model directories after evaluation if they exist.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+
     notebook_login()
     
     print("Select models:")

@@ -6,7 +6,6 @@ import torch
 import numpy as np
 import evaluate
 from utils import calculate_majority_vote, tokenize_function, format_subject, format_example, gen_prompt
-from data import load_dataset_subset
 from datasets import load_dataset, DatasetDict
 from transformers import GenerationConfig
 from tqdm import tqdm
@@ -14,7 +13,18 @@ import csv
 import pandas as pd
 
 
-def evaluate_hellaswag(tokenizer, model, subset_size=10):
+def evaluate_hellaswag(tokenizer, model):
+    """
+    Evaluates the model on the HellaSwag dataset and prints the accuracy.
+
+    Args:
+        tokenizer: The tokenizer to process the text data.
+        model: The model to evaluate.
+
+    Returns:
+        None
+    """
+
     print("Calculating HellaSwag...")
     dataset = load_dataset("hellaswag", trust_remote_code=True)
     # dataset = dataset['validation'].select(range(subset_size))
@@ -48,7 +58,19 @@ def evaluate_hellaswag(tokenizer, model, subset_size=10):
     accuracy_score = accuracy_metric.compute()
     print(f"HellaSwag Accuracy: {accuracy_score['accuracy']}")
 
-def evaluate_glue_cola(tokenizer, model, subset_size=100):
+def evaluate_glue_cola(tokenizer, model):
+    """
+    Evaluates the model on the GLUE CoLA dataset and prints the accuracy.
+
+    Args:
+        tokenizer: The tokenizer to process the text data.
+        model: The model to evaluate.
+        subset_size: The number of examples to evaluate. Default is 100.
+
+    Returns:
+        None
+    """
+
     print("Calculating GLUE CoLA...")
     dataset = load_dataset("glue", "cola", split='validation')
     # dataset = dataset.select(range(subset_size))
@@ -78,7 +100,18 @@ def evaluate_glue_cola(tokenizer, model, subset_size=100):
     accuracy = accuracy_score(references_list, predictions_list)
     print(f"GLUE CoLA Accuracy: {accuracy}")
 
-def evaluate_glue_sst2(tokenizer, model, subset_size=100):
+def evaluate_glue_sst2(tokenizer, model):
+    """
+    Evaluates the model on the GLUE SST-2 dataset and prints the accuracy.
+
+    Args:
+        tokenizer: The tokenizer to process the text data.
+        model: The model to evaluate.
+
+    Returns:
+        None
+    """
+
     print("Calculating GLUE SST-2...")
     dataset = load_dataset("glue", "sst2", split='validation')
     # dataset = dataset.select(range(subset_size))
@@ -107,39 +140,18 @@ def evaluate_glue_sst2(tokenizer, model, subset_size=100):
     accuracy = accuracy_score(references_list, predictions_list)
     print(f"GLUE SST-2 Accuracy: {accuracy}")
 
-def evaluate_glue_mrpc(tokenizer, model, subset_size=100):
-    print("Calculating GLUE MRPC...")
-    dataset = load_dataset("glue", "mrpc", split='validation')
-    # dataset = dataset.select(range(subset_size))
-    predictions_list = []
-    references_list = []
+def evaluate_glue_qqp(tokenizer, model):
+    """
+    Evaluates the model on the GLUE QQP dataset and prints the accuracy, precision, recall, and F1 score.
 
-    for example in dataset:
-        sentence1 = str(example['sentence1'])
-        sentence2 = str(example['sentence2'])
-        label_int = int(example['label'])
+    Args:
+        tokenizer: The tokenizer to process the text data.
+        model: The model to evaluate.
 
-        all_predictions = []
+    Returns:
+        None
+    """
 
-        for _ in range(5):
-            inputs = tokenizer(
-                sentence1, sentence2, return_tensors="pt",
-                padding='max_length', max_length=128, truncation=True
-            )
-            with torch.no_grad():
-                outputs = model(**inputs)
-                logits = outputs.logits
-            prediction = logits.argmax(dim=-1).item()
-            all_predictions.append(prediction)
-
-        final_prediction = calculate_majority_vote(all_predictions)
-        predictions_list.append(final_prediction)
-        references_list.append(label_int)
-
-    accuracy = accuracy_score(references_list, predictions_list)
-    print(f"GLUE MRPC Accuracy: {accuracy}")
-
-def evaluate_glue_qqp(tokenizer, model, subset_size=100):
     print("Calculating GLUE QQP...")
 
     dataset = load_dataset("glue", "qqp", split='validation')
@@ -176,7 +188,18 @@ def evaluate_glue_qqp(tokenizer, model, subset_size=100):
     print(f"GLUE QQP Recall: {recall}")
     print(f"GLUE QQP F1: {f1}")
 
-def evaluate_glue_stsb(tokenizer, model, subset_size=100):
+def evaluate_glue_stsb(tokenizer, model):
+    """
+    Evaluates the model on the GLUE STS-B dataset and prints the Pearson and Spearman correlations.
+
+    Args:
+        tokenizer: The tokenizer to process the text data.
+        model: The model to evaluate.
+
+    Returns:
+        None
+    """
+
     print("Calculating GLUE STS-B...")
 
     dataset = load_dataset("glue", "stsb", split='validation')
@@ -211,7 +234,20 @@ def evaluate_glue_stsb(tokenizer, model, subset_size=100):
     print(f"GLUE STS-B Pearson Correlation: {pearson_corr}")
     print(f"GLUE STS-B Spearman Correlation: {spearman_corr}")
 
-def evaluate_dialogsum(tokenizer, model, subset_size=10, max_length=512):
+def evaluate_dialogsum(tokenizer, model, max_length=512):
+    """
+    Evaluates the model on the Dialogsum dataset and prints the ROUGE, BLEU, and METEOR scores.
+
+    Args:
+        tokenizer: The tokenizer to process the text data.
+        model: The model to evaluate.
+        max_length (int): The maximum length for the tokenized sequences. Default is 512.
+
+
+    Returns:
+        None
+    """
+
     print("Calculating ROUGE, BLEU, & METEOR using Dialogsum ...")
 
     dataset_name = "knkarthick/dialogsum"
@@ -264,6 +300,17 @@ def evaluate_dialogsum(tokenizer, model, subset_size=10, max_length=512):
     print(f'dialogsum METEOR Results: \n{meteor_results}\n')
 
 def evaluate_perplexity(tokenizer, model):
+    """
+    Evaluates the model on the WikiText-2-Raw dataset and prints the perplexity score.
+
+    Args:
+        tokenizer: The tokenizer to process the text data.
+        model: The model to evaluate.
+
+    Returns:
+        None
+    """
+
     print("Calculating Perplexity using WikiText-2-Raw...")
 
     test = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
@@ -296,6 +343,20 @@ def evaluate_perplexity(tokenizer, model):
     print(f"Perplexity On WikiText-2-Raw Dataset: {ppl}")
 
 def calculate_mmlu(subject, model, tokenizer, dev_df, test_df):
+    """
+    Evaluates the model on a specific subject of the MMLU dataset and prints the accuracy.
+
+    Args:
+        subject: The subject to evaluate.
+        model: The model to evaluate.
+        tokenizer: The tokenizer to process the text data.
+        dev_df: The development set dataframe.
+        test_df: The test set dataframe.
+
+    Returns:
+        tuple: A tuple containing correctness list, accuracy, and probability list.
+    """
+
     print("Benchmarking Against MMLU...")
     cors = []
     all_probs = []
@@ -348,6 +409,17 @@ def calculate_mmlu(subject, model, tokenizer, dev_df, test_df):
     return cors, acc, all_probs
 
 def evaluate_mmlu(tokenizer, model):
+    """
+    Evaluates the model on the MMLU dataset and prints the average accuracy across all subjects.
+
+    Args:
+        tokenizer: The tokenizer to process the text data.
+        model: The model to evaluate.
+
+    Returns:
+        None
+    """
+
     dataset = load_dataset("cais/mmlu", 'all', trust_remote_code=True)
     test = pd.DataFrame(dataset['test'])
     dev = pd.DataFrame(dataset['dev'])
