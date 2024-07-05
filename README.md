@@ -16,8 +16,7 @@ This repository contains a comprehensive framework for evaluating large language
 - [Supported Tasks](#supported-tasks)
 - [Requirements](#requirements)
 - [Contributing](#contributing)
-- [License](#license)
-
+  
 ## Installation
 
 1. Clone the repository:
