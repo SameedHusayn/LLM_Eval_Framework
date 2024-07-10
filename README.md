@@ -25,21 +25,20 @@ This repository contains a comprehensive framework for evaluating large language
     cd LLM-Evaluation-Framework
     ```
 
-2. Install the required packages:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
 ## Usage
 
 ### Running the Evaluation
 
-1. Run the `main.py` script to start the evaluation process:
+1. Build the docker container:
     ```bash
-    python main.py
+    docker build -t llm_eval_framework .
     ```
-
-2. Follow the prompts to select the models and tasks you want to evaluate.
+2. Run the docker container:
+    ```bash
+    docker run -it llm_eval_framework
+    ```
+3. Enter your Hugging Face token to access models.
+4. Follow the prompts to select the models and tasks you want to evaluate.
 
 ## Scripts Overview
 
