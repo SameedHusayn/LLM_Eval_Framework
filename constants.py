@@ -24,7 +24,7 @@ models = {
     '6': {
         'name': "Qwen/Qwen-7B",
         'description': "6. Qwen-7B"
-    }
+    },
     '7': {
         'name': "AmeerH/FPT-Base",
         'description': "6. FPT-Base"
