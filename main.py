@@ -31,13 +31,14 @@ def main():
     for model in models.values():
         print(model['description'])
 
-    model_choices = input("Enter the numbers of the models you want to evaluate, separated by commas: ").strip().split(',')
-
+    # model_choices = input("Enter the numbers of the models you want to evaluate, separated by commas: ").strip().split(',')
+    model_choices = 7
     print("Select evaluation tasks:")
     for task in tasks.values():
         print(task['description'])
 
-    task_choices = input("Enter the numbers of the tasks you want to evaluate, separated by commas: ").strip().split(',')
+    # task_choices = input("Enter the numbers of the tasks you want to evaluate, separated by commas: ").strip().split(',')
+    task_choices = 8
 
     selected_models = [models[model.strip()]['name'] for model in model_choices if model.strip() in models]
     selected_tasks = [tasks[task.strip()]['function'] for task in task_choices if task.strip() in tasks]
