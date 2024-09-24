@@ -368,13 +368,13 @@ def calculate_mmlu(subject, model, tokenizer, dev_df, test_df):
         prompt = train_prompt + prompt_end
 #         print(prompt)
 
-        input_ids = tokenizer(prompt, return_tensors="pt").input_ids.cuda()
+        input_ids = tokenizer(prompt, return_tensors="pt").input_ids
 
         while input_ids.shape[-1] > 2048:
             k -= 1
             train_prompt = gen_prompt(dev_df, subject, k)
             prompt = train_prompt + prompt_end
-            input_ids = tokenizer(prompt, return_tensors="pt").input_ids.cuda()
+            input_ids = tokenizer(prompt, return_tensors="pt").input_ids
 
         label = test_df.iloc[i, test_df.shape[1] - 1]
         with torch.no_grad():
@@ -384,7 +384,7 @@ def calculate_mmlu(subject, model, tokenizer, dev_df, test_df):
 #         print(logits)
 
         next_token_logits = next_token_logits.flatten()
-        next_token_probs = torch.nn.functional.softmax(next_token_logits, dim=-1).cpu()
+        next_token_probs = torch.nn.functional.softmax(next_token_logits, dim=-1)
         tokens_of_interest = [
             tokenizer("A", add_special_tokens=False).input_ids[-1],
             tokenizer("B", add_special_tokens=False).input_ids[-1],
