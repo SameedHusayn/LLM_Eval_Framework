@@ -26,7 +26,7 @@ def main():
         None
     """
 
-    interpreter_login()    
+    # interpreter_login()    
     print("Select models:")
     for model in models.values():
         print(model['description'])
